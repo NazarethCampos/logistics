@@ -9,10 +9,10 @@ import (
 
 func main() {
 	// 컨테이너 저장소 생성
-	store := NewContainerStore()
+	containerStore := NewContainerStore()
 
 	// 샘플데이터 추가ontainer{
-	store.AddContainer(&Container{
+	containerStore.AddContainer(&Container{
 		ID:               "CONT001",
 		Location:         "서울 강남구",
 		Status:           "운송중",
@@ -20,7 +20,7 @@ func main() {
 		EstimatedArrival: "2025-01-02",
 	})
 
-	store.AddContainer(&Container{
+	containerStore.AddContainer(&Container{
 		ID:               "CONT002",
 		Location:         "부산 해운대구",
 		Status:           "보관중",
@@ -28,8 +28,32 @@ func main() {
 		EstimatedArrival: "2025-01-05",
 	})
 
-	// API 핸들러 등록
-	http.HandleFunc("/api/containers", GetContainerHandler(store))
+	// 주문 저장소 생성
+	orderStore := NewOrderStore()
+
+	// 컨테이너 API 핸들러 등록
+	http.HandleFunc("/api/containers", GetContainerHandler(containerStore))
+
+	// 주문 API 핸들러 등록
+	// http.HandleFunc("/api/orders", CreateOrderHandler(orderStore))
+	// http.HandleFunc("/api/orders", GetOrdersHandler(orderStore))
+	// http.HandleFunc("/api/orders/all", GetAllOrdersHandler(orderStore))
+
+	http.HandleFunc("/api/orders", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			CreateOrderHandler(orderStore)(w, r)
+		} else if r.Method == http.MethodGet {
+			orderID := r.URL.Query().Get("id")
+
+			if orderID != "" {
+				GetOrdersHandler(orderStore)(w, r)
+			} else {
+				GetAllOrdersHandler(orderStore)(w, r)
+			}
+		} else {
+			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		}
+	})
 
 	// 서버 시작
 	fmt.Println("서버시작: http://localhost8080")
