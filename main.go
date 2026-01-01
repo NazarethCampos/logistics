@@ -7,6 +7,22 @@ import (
 	"time"
 )
 
+// CORS 미들웨어
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func main() {
 	// 컨테이너 저장소 생성
 	containerStore := NewContainerStore()
@@ -39,17 +55,20 @@ func main() {
 	// http.HandleFunc("/api/orders", GetOrdersHandler(orderStore))
 	// http.HandleFunc("/api/orders/all", GetAllOrdersHandler(orderStore))
 
+	// 주문API 핸들러 통합 등록
 	http.HandleFunc("/api/orders", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
 			CreateOrderHandler(orderStore)(w, r)
 		} else if r.Method == http.MethodGet {
-			orderID := r.URL.Query().Get("id")
+			orderID := r.URL.Query().Get("order_id")
 
 			if orderID != "" {
 				GetOrdersHandler(orderStore)(w, r)
 			} else {
 				GetAllOrdersHandler(orderStore)(w, r)
 			}
+		} else if r.Method == http.MethodPut {
+			UpdateOrderHandler(orderStore)(w, r)
 		} else {
 			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		}
@@ -57,5 +76,6 @@ func main() {
 
 	// 서버 시작
 	fmt.Println("서버시작: http://localhost8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	//log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":8080", corsMiddleware(http.DefaultServeMux)))
 }

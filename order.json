@@ -3,6 +3,6 @@
   "container_id": "CONT001",
   "customer_name": "김철수",
   "destination": "인천",
-  "status": "pending",
-  "created_at": "2023-04-01T10:00:00Z"
+  "status": "주문 접수",
+  "created_at": "2025-01-01T00:00:00Z"
 }

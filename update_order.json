@@ -1,0 +1,8 @@
+{
+  "order_id": "ORD001",
+  "container_id": "CONT001",
+  "customer_name": "김철수",
+  "destination": "부산",
+  "status": "배송 중",
+  "created_at": "2023-04-01T10:00:00Z"
+}

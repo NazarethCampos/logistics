@@ -63,3 +63,11 @@ func (os *OrderStore) GetAllOrders() []*Order {
 
 	return orders
 }
+
+func (os *OrderStore) UpdateOrder(id string, order *Order) bool {
+	if _, exists := os.orders[id]; exists {
+		os.orders[id] = order
+		return true
+	}
+	return false
+}
