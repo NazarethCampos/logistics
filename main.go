@@ -27,7 +27,7 @@ func main() {
 	// 컨테이너 저장소 생성
 	containerStore := NewContainerStore()
 
-	// 샘플데이터 추가ontainer{
+	// 샘플데이터 추가 Container{
 	containerStore.AddContainer(&Container{
 		ID:               "CONT001",
 		Location:         "서울 강남구",
@@ -56,21 +56,29 @@ func main() {
 	// http.HandleFunc("/api/orders/all", GetAllOrdersHandler(orderStore))
 
 	// 주문API 핸들러 통합 등록
+	// 주문 API
 	http.HandleFunc("/api/orders", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
+		switch r.Method {
+		case http.MethodPost:
 			CreateOrderHandler(orderStore)(w, r)
-		} else if r.Method == http.MethodGet {
+		case http.MethodGet:
 			orderID := r.URL.Query().Get("order_id")
+			customerName := r.URL.Query().Get("customer_name")
+			status := r.URL.Query().Get("status")
 
 			if orderID != "" {
 				GetOrdersHandler(orderStore)(w, r)
+			} else if customerName != "" || status != "" {
+				SearchOrdersHandler(orderStore)(w, r)
 			} else {
 				GetAllOrdersHandler(orderStore)(w, r)
 			}
-		} else if r.Method == http.MethodPut {
+		case http.MethodPut:
 			UpdateOrderHandler(orderStore)(w, r)
-		} else {
-			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		case http.MethodDelete:
+			DeleteOrderHandler(orderStore)(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 	})
 
